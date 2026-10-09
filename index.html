@@ -1,0 +1,2578 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATS-Friendly CV Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-subtle: #eff6ff;
+      --surface: #ffffff;
+      --background: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --border-hover: #cbd5e1;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --radius: 8px;
+      --radius-sm: 6px;
+      --canvas-bg: #0b0f19;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+      --shadow-sheet: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Navigation Header */
+    .app-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 0.65rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .brand-icon-box {
+      width: 32px;
+      height: 32px;
+      background: #0f172a;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+
+    .app-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge-ats {
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.18rem 0.55rem;
+      border-radius: 9999px;
+      border: 1px solid #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-ats::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Language Switcher */
+    .lang-switcher {
+      display: inline-flex;
+      background: #f1f5f9;
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .lang-btn {
+      padding: 0.28rem 0.6rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .lang-btn.active {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    /* Layout Container */
+    .app-container {
+      display: grid;
+      grid-template-columns: 1fr 1.05fr;
+      min-height: calc(100vh - 57px);
+    }
+
+    @media (max-width: 1100px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Form Panel & Multi-Step */
+    .form-panel {
+      padding: 1.5rem;
+      background: #ffffff;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      max-height: calc(100vh - 57px);
+    }
+
+    /* Stepper Indicator */
+    .stepper {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      position: relative;
+      background: #f8fafc;
+      padding: 0.35rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      gap: 0.25rem;
+      overflow-x: auto;
+    }
+
+    .step-item {
+      flex: 1;
+      text-align: center;
+      padding: 0.45rem 0.35rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+
+    .step-item:hover {
+      color: var(--text);
+      background: #f1f5f9;
+    }
+
+    .step-item.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid #e2e8f0;
+    }
+
+    .step-item.completed {
+      color: #334155;
+    }
+
+    .step-badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #64748b;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    .step-item.active .step-badge {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .step-item.completed .step-badge {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    /* Stages */
+    .stage-content {
+      display: none;
+    }
+    .stage-content.active {
+      display: block;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stage-header {
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stage-header h2 {
+      font-size: 1.12rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #0f172a;
+    }
+
+    .stage-header p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+      line-height: 1.45;
+    }
+
+    .stage-action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.85rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .hint-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 0.95rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
+
+    .date-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+
+    .checkbox-inline {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: #475569;
+      height: 38px;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      color: #334155;
+    }
+
+    .required-star {
+      color: var(--danger);
+      font-weight: 700;
+      margin-left: 2px;
+    }
+
+    label .hint {
+      font-weight: 400;
+      color: var(--text-muted);
+      font-size: 0.73rem;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="month"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 0.52rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.86rem;
+      font-family: inherit;
+      color: var(--text);
+      background-color: #ffffff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #94a3b8;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    /* Dynamic Item Cards & Drag-Drop */
+    .dynamic-item-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 0.85rem;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    }
+
+    .dynamic-item-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .dynamic-item-card.dragging {
+      opacity: 0.4;
+      border: 2px dashed var(--primary);
+      background: #eff6ff;
+    }
+
+    .dynamic-item-card.drag-over {
+      border-top: 2px solid var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.85rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .card-top-left {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .drag-handle {
+      cursor: grab;
+      color: #64748b;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0.22rem 0.5rem;
+      border-radius: 4px;
+      background: #f1f5f9;
+      user-select: none;
+      border: 1px solid var(--border);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .drag-handle:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .card-title {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .btn-remove {
+      background: none;
+      border: 1px solid transparent;
+      color: #64748b;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.22rem 0.5rem;
+      border-radius: 4px;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-remove:hover {
+      background: #fee2e2;
+      color: var(--danger);
+      border-color: #fecaca;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.48rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      text-decoration: none;
+      line-height: 1.25;
+    }
+
+    .btn-sm {
+      padding: 0.32rem 0.65rem;
+      font-size: 0.75rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-outline {
+      background: #ffffff;
+      border-color: var(--border);
+      color: #334155;
+    }
+    .btn-outline:hover {
+      background: #f8fafc;
+      border-color: var(--border-hover);
+      color: #0f172a;
+    }
+
+    .btn-dashed {
+      width: 100%;
+      border: 1px dashed #cbd5e1;
+      background: #ffffff;
+      color: #475569;
+      padding: 0.6rem;
+      margin-top: 0.35rem;
+      margin-bottom: 0.5rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-dashed:hover {
+      background: #f8fafc;
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .stepper-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Section Subheaders */
+    .section-divider-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 1.25rem 0 0.5rem 0;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 0.65rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.82rem;
+      font-weight: 500;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1000;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .toast-msg.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Preview Panel */
+    .preview-panel {
+      padding: 1.5rem;
+      background: var(--canvas-bg);
+      background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 20px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+      max-height: calc(100vh - 57px);
+    }
+
+    .preview-toolbar {
+      width: 210mm;
+      max-width: 100%;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.45rem 0.85rem;
+      border-radius: var(--radius-sm);
+      color: #f8fafc;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .preview-toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .font-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .font-selector select {
+      padding: 0.22rem 0.5rem;
+      font-size: 0.76rem;
+      border-radius: 4px;
+      width: auto;
+      background: #0f172a;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* A4 Paper Sheet for ATS */
+    .a4-sheet {
+      width: 210mm;
+      min-height: 297mm;
+      height: auto;
+      flex-shrink: 0;
+      margin-bottom: 2.5rem;
+      background: #ffffff;
+      box-shadow: var(--shadow-sheet);
+      padding: 15mm 18mm;
+      color: #111827;
+      box-sizing: border-box;
+      font-size: 10pt;
+      line-height: 1.35;
+      font-family: Arial, Helvetica, sans-serif;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* ATS Resume Styling (Strict, clean, single column) */
+    .ats-cv {
+      width: 100%;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Header */
+    .cv-header {
+      text-align: center;
+      border-bottom: 1.5px solid #111827;
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+
+    .cv-name {
+      font-size: 20pt;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      line-height: 1.1;
+      word-break: break-word;
+    }
+
+    .cv-contacts {
+      font-size: 9.3pt;
+      color: #1f2937;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px 8px;
+    }
+
+    .cv-contacts span:not(:last-child)::after {
+      content: "•";
+      margin-left: 8px;
+      color: #4b5563;
+    }
+
+    .cv-contacts a {
+      color: inherit;
+      text-decoration: none;
+      word-break: break-all;
+      overflow-wrap: anywhere;
+    }
+
+    /* Summary: strictly without header! */
+    .cv-summary-container {
+      margin-bottom: 10px;
+    }
+    .cv-summary-text {
+      font-size: 9.6pt;
+      text-align: justify;
+      color: #1f2937;
+      line-height: 1.4;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Sections */
+    .cv-section {
+      margin-bottom: 11px;
+    }
+
+    .cv-section-title {
+      font-size: 10.8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #374151;
+      padding-bottom: 2px;
+      margin-bottom: 6px;
+      color: #111827;
+    }
+
+    /* Entries */
+    .cv-entry {
+      margin-bottom: 7px;
+    }
+
+    .cv-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 9.8pt;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cv-title-bold {
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .cv-sub-bold {
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .cv-date, .cv-location {
+      font-size: 9pt;
+      color: #374151;
+      font-style: italic;
+      white-space: nowrap;
+    }
+
+    .cv-sub-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9.3pt;
+      margin-bottom: 2px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Bullet Points */
+    .cv-bullets {
+      margin-left: 17px;
+      margin-top: 3px;
+      font-size: 9.3pt;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .cv-bullets li {
+      margin-bottom: 2px;
+      text-align: justify;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
+    /* Skills */
+    .cv-skills-grid {
+      font-size: 9.4pt;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    .cv-skill-row {
+      margin-bottom: 3px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    .cv-skill-label {
+      font-weight: 700;
+    }
+
+    /* Print Styles (Exact A4) */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 12mm 15mm 12mm 15mm;
+      }
+
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+
+      .no-print,
+      .app-header,
+      .form-panel,
+      .preview-toolbar,
+      .toast-msg {
+        display: none !important;
+      }
+
+      .app-container {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .preview-panel {
+        background: transparent !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        max-height: none !important;
+      }
+
+      .a4-sheet {
+        box-shadow: none !important;
+        width: 100% !important;
+        min-height: auto !important;
+        height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
+      }
+
+      .cv-entry {
+        page-break-inside: avoid;
+      }
+      .cv-section {
+        page-break-inside: auto;
+      }
+      .cv-section-title {
+        page-break-after: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Bar -->
+  <header class="app-header no-print">
+    <div class="app-brand">
+      <div class="brand-icon-box" title="ATS Resume Builder">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      </div>
+      <div class="app-title">
+        <span>ATS Resume Builder</span>
+        <span class="badge-ats">A4 • ATS Ready</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <!-- Bahasa Selector -->
+      <div class="lang-switcher" title="Ubah Bahasa Template CV">
+        <button type="button" class="lang-btn" id="lang-btn-id" onclick="setLanguage('id')">ID</button>
+        <button type="button" class="lang-btn active" id="lang-btn-en" onclick="setLanguage('en')">EN</button>
+      </div>
+
+      <!-- Local Storage Action -->
+      <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-outline" onclick="saveToLocalStorage(false)" title="Simpan data formulir ke penyimpanan browser">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Simpan Data
+        </button>
+        <span id="save-status-indicator" style="font-size: 0.72rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 5px; background: #f8fafc; padding: 0.28rem 0.6rem; border-radius: 9999px; border: 1px solid var(--border);" title="Status penyimpanan otomatis">
+          <span id="save-status-dot" style="width: 6px; height: 6px; border-radius: 50%; background: var(--success); display: inline-block;"></span>
+          <span id="save-status-text">Tersimpan</span>
+        </span>
+      </div>
+
+      <!-- Sample & Print Actions -->
+      <button type="button" class="btn btn-outline" onclick="loadSampleData()" title="Muat contoh data profil resume">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        Muat Contoh
+      </button>
+      <button type="button" class="btn btn-primary" onclick="exportToPdf()" title="Cetak atau unduh dokumen sebagai PDF A4">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        Cetak / Unduh PDF
+      </button>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <!-- LEFT PANEL: Multi-step Form -->
+    <div class="form-panel no-print">
+      <!-- Step Navigation Indicators -->
+      <div class="stepper">
+        <div class="step-item active" onclick="goToStage(1)" id="step-btn-1">
+          <span class="step-badge">1</span> Kontak
+        </div>
+        <div class="step-item" onclick="goToStage(2)" id="step-btn-2">
+          <span class="step-badge">2</span> Ringkasan
+        </div>
+        <div class="step-item" onclick="goToStage(3)" id="step-btn-3">
+          <span class="step-badge">3</span> Pendidikan
+        </div>
+        <div class="step-item" onclick="goToStage(4)" id="step-btn-4">
+          <span class="step-badge">4</span> Pengalaman
+        </div>
+        <div class="step-item" onclick="goToStage(5)" id="step-btn-5">
+          <span class="step-badge">5</span> Organisasi
+        </div>
+        <div class="step-item" onclick="goToStage(6)" id="step-btn-6">
+          <span class="step-badge">6</span> Proyek
+        </div>
+        <div class="step-item" onclick="goToStage(7)" id="step-btn-7">
+          <span class="step-badge">7</span> Keahlian & Ekstra
+        </div>
+      </div>
+
+      <!-- STAGE 1: Kontak & Data Diri -->
+      <div class="stage-content active" id="stage-1">
+        <div class="stage-header">
+          <h2>Tahap 1: Data Pribadi & Kontak</h2>
+          <p>Tanda bintang merah (<span class="required-star">*</span>) wajib diisi. Bagian kota, domisili, dan link sosial media bersifat opsional.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Nama Lengkap <span class="required-star">*</span></label>
+          <input type="text" id="input-fullname" placeholder="Contoh: Rian Pratama, S.Kom." oninput="updateCV()">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email Profesional <span class="required-star">*</span></label>
+            <input type="email" id="input-email" placeholder="rian.pratama@email.com" oninput="updateCV()">
+          </div>
+          <div class="form-group">
+            <label>Nomor Telepon / WhatsApp <span class="required-star">*</span></label>
+            <input type="tel" id="input-phone" placeholder="+62 812-3456-7890" oninput="updateCV()">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kota, Negara <span class="hint">(Opsional)</span></label>
+            <input type="text" id="input-location" placeholder="Jakarta Selatan, Indonesia" oninput="updateCV()">
+          </div>
+          <div class="form-group">
+            <label>LinkedIn URL <span class="hint">(Opsional)</span></label>
+            <input type="url" id="input-linkedin" placeholder="linkedin.com/in/rianpratama" oninput="updateCV()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Portofolio / GitHub URL <span class="hint">(Opsional)</span></label>
+          <input type="url" id="input-portfolio" placeholder="github.com/rianpratama" oninput="updateCV()">
+        </div>
+
+        <div class="stepper-nav">
+          <div></div>
+          <button type="button" class="btn btn-primary" onclick="goToStage(2)">
+            Lanjut: Ringkasan
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STAGE 2: Ringkasan Profesional (Summary) -->
+      <div class="stage-content" id="stage-2">
+        <div class="stage-header">
+          <h2>Tahap 2: Ringkasan Profesional (Summary)</h2>
+          <p>Ringkasan profil akan ditampilkan tepat di bawah kontak tanpa judul/header agar rapi dan menghemat ruang lembar.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Professional Summary <span class="hint">(Opsional - biarkan kosong jika tidak diperlukan)</span></label>
+          <textarea id="input-summary" rows="5" placeholder="Contoh: Software Engineer dengan 4+ tahun pengalaman dalam arsitektur backend berskala tinggi..." oninput="updateCV()"></textarea>
+        </div>
+
+        <div class="stepper-nav">
+          <button type="button" class="btn btn-outline" onclick="goToStage(1)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Kembali
+          </button>
+          <button type="button" class="btn btn-primary" onclick="goToStage(3)">
+            Lanjut: Pendidikan
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STAGE 3: Pendidikan (Education) -->
+      <div class="stage-content" id="stage-3">
+        <div class="stage-header">
+          <h2>Tahap 3: Riwayat Pendidikan (Education)</h2>
+          <p>Riwayat pendidikan diletakkan sebelum pengalaman. Anda dapat menggeser urutan atau mengurutkannya secara otomatis.</p>
+        </div>
+
+        <div class="stage-action-bar">
+          <span class="hint-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Tarik tombol grip pada kartu untuk menata urutan
+          </span>
+          <button type="button" class="btn btn-outline btn-sm" onclick="sortList('education')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+            Urutkan Otomatis
+          </button>
+        </div>
+
+        <div id="education-list" class="sortable-list" data-list="education"></div>
+
+        <button type="button" class="btn btn-dashed" onclick="createEducationItem()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Riwayat Pendidikan
+        </button>
+
+        <div class="stepper-nav">
+          <button type="button" class="btn btn-outline" onclick="goToStage(2)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Kembali
+          </button>
+          <button type="button" class="btn btn-primary" onclick="goToStage(4)">
+            Lanjut: Pengalaman
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STAGE 4: Pengalaman (Professional Experience) -->
+      <div class="stage-content" id="stage-4">
+        <div class="stage-header">
+          <h2>Tahap 4: Pengalaman Kerja (Professional Experience)</h2>
+          <p>Bisa dikosongkan jika fresh graduate atau belum memiliki pengalaman kerja.</p>
+        </div>
+
+        <div class="stage-action-bar">
+          <span class="hint-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Tarik tombol grip pada kartu untuk menata urutan
+          </span>
+          <button type="button" class="btn btn-outline btn-sm" onclick="sortList('experience')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+            Urutkan Otomatis
+          </button>
+        </div>
+
+        <div id="experience-list" class="sortable-list" data-list="experience"></div>
+
+        <button type="button" class="btn btn-dashed" onclick="createExperienceItem()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Pengalaman Kerja
+        </button>
+
+        <div class="stepper-nav">
+          <button type="button" class="btn btn-outline" onclick="goToStage(3)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Kembali
+          </button>
+          <button type="button" class="btn btn-primary" onclick="goToStage(5)">
+            Lanjut: Organisasi
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STAGE 5: Organisasi (Organizational Experience) -->
+      <div class="stage-content" id="stage-5">
+        <div class="stage-header">
+          <h2>Tahap 5: Pengalaman Organisasi (Organizational Experience)</h2>
+          <p>Bersifat opsional. Bisa dikosongkan jika tidak memiliki pengalaman organisasi.</p>
+        </div>
+
+        <div class="stage-action-bar">
+          <span class="hint-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Tarik tombol grip pada kartu untuk menata urutan
+          </span>
+          <button type="button" class="btn btn-outline btn-sm" onclick="sortList('organization')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+            Urutkan Otomatis
+          </button>
+        </div>
+
+        <div id="org-list" class="sortable-list" data-list="organization"></div>
+        <button type="button" class="btn btn-dashed" onclick="createOrganizationItem()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Pengalaman Organisasi
+        </button>
+
+        <div class="stepper-nav">
+          <button type="button" class="btn btn-outline" onclick="goToStage(4)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Kembali
+          </button>
+          <button type="button" class="btn btn-primary" onclick="goToStage(6)">
+            Lanjut: Proyek & Aktivitas
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STAGE 6: Proyek & Aktivitas (Projects & Activities) -->
+      <div class="stage-content" id="stage-6">
+        <div class="stage-header">
+          <h2>Tahap 6: Proyek & Aktivitas (Projects & Activities)</h2>
+          <p>Tampilkan portofolio proyek atau kegiatan yang relevan. Bersifat opsional.</p>
+        </div>
+
+        <div class="stage-action-bar">
+          <span class="hint-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            Tarik tombol grip pada kartu untuk menata urutan
+          </span>
+          <button type="button" class="btn btn-outline btn-sm" onclick="sortList('projectActivity')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>
+            Urutkan Otomatis
+          </button>
+        </div>
+
+        <div id="proj-activity-list" class="sortable-list" data-list="projectActivity"></div>
+        <button type="button" class="btn btn-dashed" onclick="createProjectActivityItem()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Proyek / Aktivitas
+        </button>
+
+        <div class="stepper-nav">
+          <button type="button" class="btn btn-outline" onclick="goToStage(5)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Kembali
+          </button>
+          <button type="button" class="btn btn-primary" onclick="goToStage(7)">
+            Lanjut: Keahlian & Ekstra
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- STAGE 7: Keahlian & Ekstra (Sertifikasi) -->
+      <div class="stage-content" id="stage-7">
+        <div class="stage-header">
+          <h2>Tahap 7: Keahlian & Sertifikasi</h2>
+          <p>Lengkapi keahlian inti Anda dan sertifikasi yang relevan. Setiap sertifikasi dapat ditambah atau dihapus.</p>
+        </div>
+
+        <div class="form-group">
+          <label>Keahlian Teknis (Hard Skills) <span class="required-star">*</span></label>
+          <input type="text" id="input-hardskills" placeholder="Contoh: RESTful APIs, Microservices, CI/CD, Database Design" oninput="updateCV()">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Alat Kerja & Frameworks <span class="hint">(Opsional)</span></label>
+            <input type="text" id="input-tools" placeholder="Contoh: Go, Node.js, PostgreSQL, Docker, Git" oninput="updateCV()">
+          </div>
+          <div class="form-group">
+            <label>Bahasa (Languages) <span class="hint">(Opsional)</span></label>
+            <input type="text" id="input-languages" placeholder="Contoh: Indonesia (Native), English (Fluent)" oninput="updateCV()">
+          </div>
+        </div>
+
+        <div class="section-divider-title">
+          <span>Sertifikasi & Lisensi (Certifications)</span>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Jika dikosongkan, judul bagian sertifikasi otomatis tidak tampil di CV.</p>
+        <div id="cert-list" class="sortable-list" data-list="certification"></div>
+        <button type="button" class="btn btn-dashed" onclick="createCertificationItem()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah Sertifikasi
+        </button>
+
+        <div class="stepper-nav">
+          <button type="button" class="btn btn-outline" onclick="goToStage(6)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Kembali
+          </button>
+          <button type="button" class="btn btn-primary" onclick="exportToPdf()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Cetak / Unduh PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Live A4 Preview -->
+    <div class="preview-panel">
+      <div class="preview-toolbar no-print">
+        <div class="preview-toolbar-group">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          <span style="font-weight: 600; font-size: 0.78rem;">Pratinjau Lembar A4</span>
+          <span id="preview-lang-badge" style="font-size: 0.72rem; background: rgba(255,255,255,0.12); padding: 2px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15);">English</span>
+        </div>
+        <div class="preview-toolbar-group">
+          <div class="font-selector">
+            <label for="font-choice" style="color: #cbd5e1; margin: 0; font-size: 0.76rem;">Font:</label>
+            <select id="font-choice" onchange="changeFont(this.value)">
+              <option value="Arial, Helvetica, sans-serif">Arial (Standard)</option>
+              <option value="'Calibri', 'Segoe UI', sans-serif">Calibri</option>
+              <option value="'Times New Roman', Times, serif">Times New Roman</option>
+              <option value="'Georgia', serif">Georgia</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- The A4 Sheet -->
+      <div class="a4-sheet" id="cv-sheet">
+        <div class="ats-cv">
+          <!-- Header Kontak -->
+          <header class="cv-header">
+            <h1 class="cv-name" id="cv-preview-name">NAMA LENGKAP</h1>
+            <div class="cv-contacts" id="cv-preview-contacts"></div>
+          </header>
+
+          <!-- Summary (Tanpa Header Teks) -->
+          <div class="cv-summary-container" id="cv-preview-summary-sec" style="display: none;">
+            <p class="cv-summary-text" id="cv-preview-summary"></p>
+          </div>
+
+          <!-- 1. Education -->
+          <section class="cv-section" id="cv-preview-education-sec" style="display: none;">
+            <h2 class="cv-section-title" id="title-sec-education">Education</h2>
+            <div id="cv-preview-education"></div>
+          </section>
+
+          <!-- 2. Professional Experience -->
+          <section class="cv-section" id="cv-preview-experience-sec" style="display: none;">
+            <h2 class="cv-section-title" id="title-sec-experience">Professional Experience</h2>
+            <div id="cv-preview-experience"></div>
+          </section>
+
+          <!-- 3. Organizational Experience -->
+          <section class="cv-section" id="cv-preview-org-sec" style="display: none;">
+            <h2 class="cv-section-title" id="title-sec-org">Organizational Experience</h2>
+            <div id="cv-preview-org"></div>
+          </section>
+
+          <!-- 4. Projects and Activities -->
+          <section class="cv-section" id="cv-preview-proj-sec" style="display: none;">
+            <h2 class="cv-section-title" id="title-sec-proj">Projects & Activities</h2>
+            <div id="cv-preview-proj"></div>
+          </section>
+
+          <!-- 5. Skills & Technologies -->
+          <section class="cv-section" id="cv-preview-skills-sec" style="display: none;">
+            <h2 class="cv-section-title" id="title-sec-skills">Skills & Technologies</h2>
+            <div class="cv-skills-grid" id="cv-preview-skills"></div>
+          </section>
+
+          <!-- 6. Certifications -->
+          <section class="cv-section" id="cv-preview-cert-sec" style="display: none;">
+            <h2 class="cv-section-title" id="title-sec-certs">Certifications</h2>
+            <ul class="cv-bullets" id="cv-preview-certs"></ul>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Element -->
+  <div class="toast-msg" id="toast">
+    <span id="toast-icon" style="display:inline-flex; align-items:center;"></span>
+    <span id="toast-text">Data tersimpan</span>
+  </div>
+
+  <script>
+    // Global State Arrays
+    let educations = [];
+    let experiences = [];
+    let organizations = [];
+    let projectActivities = [];
+    let certifications = [];
+    let currentLang = 'en';
+
+    // Auto-Save & Dirty State Tracking
+    let isFormDirty = false;
+    let isInitializing = true;
+    const AUTO_SAVE_INTERVAL_MS = 2 * 60 * 1000; // 2 Menit (120 detik)
+
+    // UI Status Auto-Save Helper
+    function updateSaveStatusUI(status, customTime) {
+      const dot = document.getElementById('save-status-dot');
+      const text = document.getElementById('save-status-text');
+      if (!dot || !text) return;
+
+      if (status === 'dirty') {
+        dot.style.background = '#f59e0b';
+        text.textContent = 'Belum disimpan';
+      } else if (status === 'saving') {
+        dot.style.background = '#3b82f6';
+        text.textContent = 'Menyimpan...';
+      } else if (status === 'saved') {
+        dot.style.background = '#22c55e';
+        const timeStr = customTime || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        text.textContent = `Tersimpan ${timeStr}`;
+      }
+    }
+
+    // Drag-and-Drop Tracker
+    let draggedItemInfo = null;
+
+    // Multi-Language Dictionary
+    const I18N = {
+      en: {
+        secEducation: 'Education',
+        secExperience: 'Professional Experience',
+        secOrg: 'Organizational Experience',
+        secProj: 'Projects & Activities',
+        secSkills: 'Skills & Technologies',
+        secCerts: 'Certifications',
+        present: 'Present',
+        skillTech: 'Technical Skills:',
+        skillTools: 'Tools & Frameworks:',
+        skillLang: 'Languages:',
+        langLabel: 'English',
+        months: {
+          '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr',
+          '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Aug',
+          '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dec'
+        }
+      },
+      id: {
+        secEducation: 'Pendidikan',
+        secExperience: 'Pengalaman Profesional',
+        secOrg: 'Pengalaman Organisasi',
+        secProj: 'Proyek & Aktivitas',
+        secSkills: 'Keahlian & Teknologi',
+        secCerts: 'Sertifikasi',
+        present: 'Sekarang',
+        skillTech: 'Keahlian Teknis:',
+        skillTools: 'Alat Kerja & Framework:',
+        skillLang: 'Bahasa:',
+        langLabel: 'Bahasa Indonesia',
+        months: {
+          '01': 'Jan', '02': 'Feb', '03': 'Mar', '04': 'Apr',
+          '05': 'Mei', '06': 'Jun', '07': 'Jul', '08': 'Agu',
+          '09': 'Sep', '10': 'Okt', '11': 'Nov', '12': 'Des'
+        }
+      }
+    };
+
+    // Stage Navigation
+    function goToStage(stageNum) {
+      document.querySelectorAll('.stage-content').forEach((el, index) => {
+        el.classList.toggle('active', index + 1 === stageNum);
+      });
+      document.querySelectorAll('.step-item').forEach((el, index) => {
+        el.classList.toggle('active', index + 1 === stageNum);
+        if (index + 1 < stageNum) {
+          el.classList.add('completed');
+        } else {
+          el.classList.remove('completed');
+        }
+      });
+    }
+
+    // Font Changer
+    function changeFont(fontFamily) {
+      document.getElementById('cv-sheet').style.fontFamily = fontFamily;
+    }
+
+    // Language Toggle
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.getElementById('lang-btn-id').classList.toggle('active', lang === 'id');
+      document.getElementById('lang-btn-en').classList.toggle('active', lang === 'en');
+      document.getElementById('preview-lang-badge').textContent = I18N[lang].langLabel;
+      updateCV();
+      showToast('info', `Bahasa template diubah ke ${I18N[lang].langLabel}`);
+    }
+
+    // Toast Notification Helper (SVG Icons, no emoji)
+    function showToast(type, message) {
+      const toast = document.getElementById('toast');
+      const iconEl = document.getElementById('toast-icon');
+      const textEl = document.getElementById('toast-text');
+
+      const icons = {
+        success: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+        info: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+        sort: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></svg>',
+        warning: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        move: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>'
+      };
+
+      iconEl.innerHTML = icons[type] || icons.info;
+      textEl.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
+    }
+
+    // Month Formatter Helper
+    function formatMonthYear(val) {
+      if (!val) return '';
+      const parts = val.split('-');
+      const monthDict = I18N[currentLang].months;
+      if (parts.length === 2 && monthDict[parts[1]]) {
+        return `${monthDict[parts[1]]} ${parts[0]}`;
+      }
+      return val;
+    }
+
+    function computePeriodString(startVal, endVal, isPresent) {
+      const startText = formatMonthYear(startVal);
+      const presentWord = I18N[currentLang].present;
+      if (isPresent) {
+        return startText ? `${startText} – ${presentWord}` : presentWord;
+      }
+      const endText = formatMonthYear(endVal);
+      if (startText && endText) {
+        return `${startText} – ${endText}`;
+      } else if (startText) {
+        return startText;
+      } else if (endText) {
+        return endText;
+      }
+      return '';
+    }
+
+    // Auto-Sort Comparator (Newest First)
+    function compareDescPeriods(a, b) {
+      if (a.isPresent && !b.isPresent) return -1;
+      if (!a.isPresent && b.isPresent) return 1;
+
+      const endA = a.endMonth || a.startMonth || '';
+      const endB = b.endMonth || b.startMonth || '';
+      if (endA !== endB) {
+        return endB.localeCompare(endA);
+      }
+      const startA = a.startMonth || '';
+      const startB = b.startMonth || '';
+      return startB.localeCompare(startA);
+    }
+
+    function sortList(listType) {
+      if (listType === 'experience') {
+        experiences.sort(compareDescPeriods);
+        renderExperienceCards();
+        showToast('sort', 'Pengalaman kerja berhasil diurutkan kronologis!');
+      } else if (listType === 'organization') {
+        organizations.sort(compareDescPeriods);
+        renderOrganizationCards();
+        showToast('sort', 'Pengalaman organisasi berhasil diurutkan kronologis!');
+      } else if (listType === 'projectActivity') {
+        projectActivities.sort(compareDescPeriods);
+        renderProjectActivityCards();
+        showToast('sort', 'Proyek & Aktivitas berhasil diurutkan kronologis!');
+      } else if (listType === 'education') {
+        educations.sort(compareDescPeriods);
+        renderEducationCards();
+        showToast('sort', 'Riwayat pendidikan berhasil diurutkan kronologis!');
+      }
+      updateCV();
+    }
+
+    // Drag and Drop Logic (Hanya handle atas / titik tiga yang bisa men-drag box)
+    function setupDragAndDrop(card, listType, itemId) {
+      // Box tidak bisa di-drag secara default
+      card.setAttribute('draggable', 'false');
+
+      const handle = card.querySelector('.drag-handle') || card.querySelector('.card-top-left') || card.querySelector('.card-top');
+
+      if (handle) {
+        handle.addEventListener('mousedown', () => {
+          card.setAttribute('draggable', 'true');
+        });
+
+        handle.addEventListener('mouseup', () => {
+          if (!card.classList.contains('dragging')) {
+            card.setAttribute('draggable', 'false');
+          }
+        });
+      }
+
+      card.addEventListener('dragstart', (e) => {
+        // Cegah drag jika tidak diinisiasi dari handle atas
+        if (card.getAttribute('draggable') !== 'true') {
+          e.preventDefault();
+          return false;
+        }
+        draggedItemInfo = { listType, itemId };
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', itemId);
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        card.setAttribute('draggable', 'false');
+        document.querySelectorAll('.dynamic-item-card').forEach(c => c.classList.remove('drag-over'));
+        draggedItemInfo = null;
+      });
+
+      // Kembalikan draggable false jika mouse dilepas di luar tanpa drag
+      document.addEventListener('mouseup', () => {
+        if (!draggedItemInfo && card.getAttribute('draggable') === 'true') {
+          card.setAttribute('draggable', 'false');
+        }
+      });
+
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (draggedItemInfo && draggedItemInfo.listType === listType && draggedItemInfo.itemId !== itemId) {
+          card.classList.add('drag-over');
+        }
+      });
+
+      card.addEventListener('dragleave', () => {
+        card.classList.remove('drag-over');
+      });
+
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        if (!draggedItemInfo || draggedItemInfo.listType !== listType) return;
+        const sourceId = draggedItemInfo.itemId;
+        const targetId = itemId;
+        if (sourceId === targetId) return;
+
+        let targetArray = null;
+        let renderFn = null;
+
+        if (listType === 'education') {
+          targetArray = educations;
+          renderFn = renderEducationCards;
+        } else if (listType === 'experience') {
+          targetArray = experiences;
+          renderFn = renderExperienceCards;
+        } else if (listType === 'organization') {
+          targetArray = organizations;
+          renderFn = renderOrganizationCards;
+        } else if (listType === 'projectActivity') {
+          targetArray = projectActivities;
+          renderFn = renderProjectActivityCards;
+        }
+
+        if (targetArray) {
+          const fromIndex = targetArray.findIndex(item => item.id === sourceId);
+          const toIndex = targetArray.findIndex(item => item.id === targetId);
+          if (fromIndex !== -1 && toIndex !== -1) {
+            const [movedItem] = targetArray.splice(fromIndex, 1);
+            targetArray.splice(toIndex, 0, movedItem);
+            renderFn();
+            updateCV();
+            showToast('move', 'Urutan kartu berhasil dipindahkan');
+          }
+        }
+      });
+    }
+
+    // ==========================================
+    // 1. EDUCATION (Render & Management)
+    // ==========================================
+    function createEducationItem() {
+      const newEdu = {
+        id: 'edu_' + Date.now() + Math.random().toString(36).substring(2, 6),
+        institution: '',
+        degree: '',
+        startMonth: '',
+        endMonth: '',
+        isPresent: false,
+        gpa: '',
+        achievements: ''
+      };
+      educations.push(newEdu);
+      renderEducationCards();
+      updateCV();
+    }
+
+    function renderEducationCards() {
+      const container = document.getElementById('education-list');
+      container.innerHTML = '';
+      educations.forEach(edu => {
+        const card = document.createElement('div');
+        card.className = 'dynamic-item-card';
+        card.id = `edu-card-${edu.id}`;
+        const titleText = edu.institution ? escapeHtml(edu.institution) : 'Riwayat Pendidikan';
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-top-left">
+              <span class="drag-handle" title="Tahan dan geser untuk menukar urutan">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="2"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/></svg>
+                Geser
+              </span>
+              <span class="card-title">${titleText}</span>
+            </div>
+            <button type="button" class="btn-remove" onclick="removeEducation('${edu.id}')" title="Hapus riwayat ini">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Hapus
+            </button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Institusi / Universitas <span class="required-star">*</span></label>
+              <input type="text" value="${escapeAttr(edu.institution)}" placeholder="Universitas Indonesia" oninput="updateEduField('${edu.id}', 'institution', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Gelar & Jurusan <span class="required-star">*</span></label>
+              <input type="text" value="${escapeAttr(edu.degree)}" placeholder="S1 Teknik Informatika" oninput="updateEduField('${edu.id}', 'degree', this.value)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Periode Waktu <span class="hint">(Pilih Bulan & Tahun)</span></label>
+            <div class="date-row">
+              <div>
+                <span style="font-size:0.75rem; color:#64748b;">Mulai:</span>
+                <input type="month" value="${edu.startMonth || ''}" onchange="updateEduField('${edu.id}', 'startMonth', this.value)">
+              </div>
+              <div>
+                <span style="font-size:0.75rem; color:#64748b;">Selesai:</span>
+                <input type="month" id="edu-end-${edu.id}" value="${edu.endMonth || ''}" ${edu.isPresent ? 'disabled' : ''} onchange="updateEduField('${edu.id}', 'endMonth', this.value)">
+              </div>
+              <label class="checkbox-inline">
+                <input type="checkbox" ${edu.isPresent ? 'checked' : ''} onchange="toggleEduPresent('${edu.id}', this.checked)"> Masih Studi
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>IPK / Nilai <span class="hint">(Opsional)</span></label>
+            <input type="text" value="${escapeAttr(edu.gpa)}" placeholder="Contoh: IPK 3.82 / 4.00 atau Cum Laude" oninput="updateEduField('${edu.id}', 'gpa', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Capaian / Prestasi Akademik <span class="hint">(Opsional, 1 per baris)</span></label>
+            <textarea rows="3" placeholder="• Juara 1 Hackathon Nasional 2021&#10;• Penerima Beasiswa Prestasi Akademik..." oninput="updateEduField('${edu.id}', 'achievements', this.value)">${escapeHtml(edu.achievements || '')}</textarea>
+          </div>
+        `;
+        setupDragAndDrop(card, 'education', edu.id);
+        container.appendChild(card);
+      });
+    }
+
+    function removeEducation(id) {
+      educations = educations.filter(e => e.id !== id);
+      renderEducationCards();
+      updateCV();
+    }
+
+    function updateEduField(id, field, val) {
+      const target = educations.find(e => e.id === id);
+      if (target) {
+        target[field] = val;
+        if (field === 'institution') {
+          const cardEl = document.getElementById(`edu-card-${id}`);
+          if (cardEl) {
+            const titleEl = cardEl.querySelector('.card-title');
+            if (titleEl) titleEl.textContent = val.trim() ? val.trim() : 'Riwayat Pendidikan';
+          }
+        }
+        updateCV();
+      }
+    }
+
+    function toggleEduPresent(id, isChecked) {
+      const target = educations.find(e => e.id === id);
+      if (target) {
+        target.isPresent = isChecked;
+        const endInput = document.getElementById(`edu-end-${id}`);
+        if (endInput) endInput.disabled = isChecked;
+        updateCV();
+      }
+    }
+
+    // ==========================================
+    // 2. PROFESSIONAL EXPERIENCE
+    // ==========================================
+    function createExperienceItem() {
+      const newExp = {
+        id: 'exp_' + Date.now() + Math.random().toString(36).substring(2, 6),
+        role: '',
+        company: '',
+        startMonth: '',
+        endMonth: '',
+        isPresent: false,
+        location: '',
+        bullets: ''
+      };
+      experiences.push(newExp);
+      renderExperienceCards();
+      updateCV();
+    }
+
+    function renderExperienceCards() {
+      const container = document.getElementById('experience-list');
+      container.innerHTML = '';
+      experiences.forEach(exp => {
+        const card = document.createElement('div');
+        card.className = 'dynamic-item-card';
+        card.id = `exp-card-${exp.id}`;
+        const titleText = exp.company ? escapeHtml(exp.company) : (exp.role ? escapeHtml(exp.role) : 'Pengalaman Kerja');
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-top-left">
+              <span class="drag-handle" title="Tahan dan geser untuk menukar urutan">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="2"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/></svg>
+                Geser
+              </span>
+              <span class="card-title">${titleText}</span>
+            </div>
+            <button type="button" class="btn-remove" onclick="removeExperience('${exp.id}')" title="Hapus riwayat ini">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Hapus
+            </button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Posisi / Job Title <span class="required-star">*</span></label>
+              <input type="text" value="${escapeAttr(exp.role)}" placeholder="Software Engineer" oninput="updateExpField('${exp.id}', 'role', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Nama Perusahaan <span class="required-star">*</span></label>
+              <input type="text" value="${escapeAttr(exp.company)}" placeholder="PT Teknologi Maju" oninput="updateExpField('${exp.id}', 'company', this.value)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Periode Waktu <span class="hint">(Pilih Bulan & Tahun)</span></label>
+            <div class="date-row">
+              <div>
+                <span style="font-size:0.75rem; color:#64748b;">Mulai:</span>
+                <input type="month" value="${exp.startMonth || ''}" onchange="updateExpField('${exp.id}', 'startMonth', this.value)">
+              </div>
+              <div>
+                <span style="font-size:0.75rem; color:#64748b;">Selesai:</span>
+                <input type="month" id="exp-end-${exp.id}" value="${exp.endMonth || ''}" ${exp.isPresent ? 'disabled' : ''} onchange="updateExpField('${exp.id}', 'endMonth', this.value)">
+              </div>
+              <label class="checkbox-inline">
+                <input type="checkbox" ${exp.isPresent ? 'checked' : ''} onchange="toggleExpPresent('${exp.id}', this.checked)"> Saat Ini
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Lokasi <span class="hint">(Opsional)</span></label>
+            <input type="text" value="${escapeAttr(exp.location)}" placeholder="Jakarta, Indonesia / Remote" oninput="updateExpField('${exp.id}', 'location', this.value)">
+          </div>
+          <div class="form-group">
+            <label>Pencapaian & Tanggung Jawab <span class="hint">(1 per baris, gunakan kata kerja aksi)</span></label>
+            <textarea rows="3" placeholder="• Mengembangkan microservices yang memproses 2.5 juta transaksi harian&#10;• Mengoptimalkan latensi API sebesar 38%..." oninput="updateExpField('${exp.id}', 'bullets', this.value)">${escapeHtml(exp.bullets || '')}</textarea>
+          </div>
+        `;
+        setupDragAndDrop(card, 'experience', exp.id);
+        container.appendChild(card);
+      });
+    }
+
+    function removeExperience(id) {
+      experiences = experiences.filter(e => e.id !== id);
+      renderExperienceCards();
+      updateCV();
+    }
+
+    function updateExpField(id, field, val) {
+      const target = experiences.find(e => e.id === id);
+      if (target) {
+        target[field] = val;
+        if (field === 'company' || field === 'role') {
+          const cardEl = document.getElementById(`exp-card-${id}`);
+          if (cardEl) {
+            const titleEl = cardEl.querySelector('.card-title');
+            if (titleEl) {
+              const text = target.company ? target.company : (target.role ? target.role : 'Pengalaman Kerja');
+              titleEl.textContent = text;
+            }
+          }
+        }
+        updateCV();
+      }
+    }
+
+    function toggleExpPresent(id, isChecked) {
+      const target = experiences.find(e => e.id === id);
+      if (target) {
+        target.isPresent = isChecked;
+        const endInput = document.getElementById(`exp-end-${id}`);
+        if (endInput) endInput.disabled = isChecked;
+        updateCV();
+      }
+    }
+
+    // ==========================================
+    // 3. ORGANIZATIONAL EXPERIENCE
+    // ==========================================
+    function createOrganizationItem() {
+      const newOrg = {
+        id: 'org_' + Date.now() + Math.random().toString(36).substring(2, 6),
+        role: '',
+        orgName: '',
+        startMonth: '',
+        endMonth: '',
+        isPresent: false,
+        bullets: ''
+      };
+      organizations.push(newOrg);
+      renderOrganizationCards();
+      updateCV();
+    }
+
+    function renderOrganizationCards() {
+      const container = document.getElementById('org-list');
+      container.innerHTML = '';
+      organizations.forEach(org => {
+        const card = document.createElement('div');
+        card.className = 'dynamic-item-card';
+        card.id = `org-card-${org.id}`;
+        const titleText = org.orgName ? escapeHtml(org.orgName) : (org.role ? escapeHtml(org.role) : 'Pengalaman Organisasi');
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-top-left">
+              <span class="drag-handle" title="Tahan dan geser untuk menukar urutan">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="2"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/></svg>
+                Geser
+              </span>
+              <span class="card-title">${titleText}</span>
+            </div>
+            <button type="button" class="btn-remove" onclick="removeOrganization('${org.id}')" title="Hapus riwayat ini">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Hapus
+            </button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Posisi / Peran <span class="required-star">*</span></label>
+              <input type="text" value="${escapeAttr(org.role)}" placeholder="Ketua Divisi / Anggota" oninput="updateOrgField('${org.id}', 'role', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Nama Organisasi / Komunitas <span class="required-star">*</span></label>
+              <input type="text" value="${escapeAttr(org.orgName)}" placeholder="BEM Fasilkom / GDSC" oninput="updateOrgField('${org.id}', 'orgName', this.value)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Periode Waktu <span class="hint">(Pilih Bulan & Tahun)</span></label>
+            <div class="date-row">
+              <div>
+                <span style="font-size:0.75rem; color:#64748b;">Mulai:</span>
+                <input type="month" value="${org.startMonth || ''}" onchange="updateOrgField('${org.id}', 'startMonth', this.value)">
+              </div>
+              <div>
+                <span style="font-size:0.75rem; color:#64748b;">Selesai:</span>
+                <input type="month" id="org-end-${org.id}" value="${org.endMonth || ''}" ${org.isPresent ? 'disabled' : ''} onchange="updateOrgField('${org.id}', 'endMonth', this.value)">
+              </div>
+              <label class="checkbox-inline">
+                <input type="checkbox" ${org.isPresent ? 'checked' : ''} onchange="toggleOrgPresent('${org.id}', this.checked)"> Saat Ini
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Tanggung Jawab & Kontribusi <span class="hint">(Opsional, 1 per baris)</span></label>
+            <textarea rows="3" placeholder="• Mengkoordinasikan workshop teknologi yang dihadiri 300+ peserta..." oninput="updateOrgField('${org.id}', 'bullets', this.value)">${escapeHtml(org.bullets || '')}</textarea>
+          </div>
+        `;
+        setupDragAndDrop(card, 'organization', org.id);
+        container.appendChild(card);
+      });
+    }
+
+    function removeOrganization(id) {
+      organizations = organizations.filter(o => o.id !== id);
+      renderOrganizationCards();
+      updateCV();
+    }
+
+    function updateOrgField(id, field, val) {
+      const target = organizations.find(o => o.id === id);
+      if (target) {
+        target[field] = val;
+        if (field === 'orgName' || field === 'role') {
+          const cardEl = document.getElementById(`org-card-${id}`);
+          if (cardEl) {
+            const titleEl = cardEl.querySelector('.card-title');
+            if (titleEl) {
+              const text = target.orgName ? target.orgName : (target.role ? target.role : 'Pengalaman Organisasi');
+              titleEl.textContent = text;
+            }
+          }
+        }
+        updateCV();
+      }
+    }
+
+    function toggleOrgPresent(id, isChecked) {
+      const target = organizations.find(o => o.id === id);
+      if (target) {
+        target.isPresent = isChecked;
+        const endInput = document.getElementById(`org-end-${id}`);
+        if (endInput) endInput.disabled = isChecked;
+        updateCV();
+      }
+    }
+
+    // ==========================================
+    // 4. PROJECTS & ACTIVITIES
+    // ==========================================
+    function createProjectActivityItem() {
+      const newProj = {
+        id: 'proj_' + Date.now() + Math.random().toString(36).substring(2, 6),
+        name: '',
+        roleOrLink: '',
+        startMonth: '',
+        endMonth: '',
+        bullets: ''
+      };
+      projectActivities.push(newProj);
+      renderProjectActivityCards();
+      updateCV();
+    }
+
+    function renderProjectActivityCards() {
+      const container = document.getElementById('proj-activity-list');
+      container.innerHTML = '';
+      projectActivities.forEach(proj => {
+        const card = document.createElement('div');
+        card.className = 'dynamic-item-card';
+        card.id = `proj-card-${proj.id}`;
+        const titleText = proj.name ? escapeHtml(proj.name) : 'Proyek / Aktivitas';
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-top-left">
+              <span class="drag-handle" title="Tahan dan geser untuk menukar urutan">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="2"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="8" cy="18" r="2"/><circle cx="16" cy="18" r="2"/></svg>
+                Geser
+              </span>
+              <span class="card-title">${titleText}</span>
+            </div>
+            <button type="button" class="btn-remove" onclick="removeProjectActivity('${proj.id}')" title="Hapus riwayat ini">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Hapus
+            </button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nama Proyek / Aktivitas <span class="required-star">*</span></label>
+              <input type="text" value="${escapeAttr(proj.name)}" placeholder="Contoh: Payment Gateway Engine" oninput="updateProjField('${proj.id}', 'name', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Peran / Tautan / Tech Stack <span class="hint">(Opsional)</span></label>
+              <input type="text" value="${escapeAttr(proj.roleOrLink)}" placeholder="Lead Developer | Go, PostgreSQL, Docker" oninput="updateProjField('${proj.id}', 'roleOrLink', this.value)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Waktu Pengerjaan <span class="hint">(Opsional)</span></label>
+            <div class="date-row">
+              <div>
+                <span style="font-size:0.75rem; color:#64748b;">Mulai:</span>
+                <input type="month" value="${proj.startMonth || ''}" onchange="updateProjField('${proj.id}', 'startMonth', this.value)">
+              </div>
+              <div>
+                <span style="font-size:0.75rem; color:#64748b;">Selesai:</span>
+                <input type="month" value="${proj.endMonth || ''}" onchange="updateProjField('${proj.id}', 'endMonth', this.value)">
+              </div>
+              <div></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Deskripsi & Hasil <span class="hint">(1 per baris)</span></label>
+            <textarea rows="3" placeholder="• Merancang integrasi 4 payment gateway dengan throughput 50k tps..." oninput="updateProjField('${proj.id}', 'bullets', this.value)">${escapeHtml(proj.bullets || '')}</textarea>
+          </div>
+        `;
+        setupDragAndDrop(card, 'projectActivity', proj.id);
+        container.appendChild(card);
+      });
+    }
+
+    function removeProjectActivity(id) {
+      projectActivities = projectActivities.filter(p => p.id !== id);
+      renderProjectActivityCards();
+      updateCV();
+    }
+
+    function updateProjField(id, field, val) {
+      const target = projectActivities.find(p => p.id === id);
+      if (target) {
+        target[field] = val;
+        if (field === 'name') {
+          const cardEl = document.getElementById(`proj-card-${id}`);
+          if (cardEl) {
+            const titleEl = cardEl.querySelector('.card-title');
+            if (titleEl) titleEl.textContent = val.trim() ? val.trim() : 'Proyek / Aktivitas';
+          }
+        }
+        updateCV();
+      }
+    }
+
+    // ==========================================
+    // 5. CERTIFICATIONS
+    // ==========================================
+    function createCertificationItem() {
+      const newCert = {
+        id: 'cert_' + Date.now() + Math.random().toString(36).substring(2, 6),
+        title: '',
+        issuerYear: ''
+      };
+      certifications.push(newCert);
+      renderCertificationCards();
+      updateCV();
+    }
+
+    function renderCertificationCards() {
+      const container = document.getElementById('cert-list');
+      container.innerHTML = '';
+      certifications.forEach(cert => {
+        const card = document.createElement('div');
+        card.className = 'dynamic-item-card';
+        card.id = `cert-card-${cert.id}`;
+        const titleText = cert.title ? escapeHtml(cert.title) : 'Sertifikasi';
+        card.innerHTML = `
+          <div class="card-top">
+            <span class="card-title">${titleText}</span>
+            <button type="button" class="btn-remove" onclick="removeCertification('${cert.id}')" title="Hapus sertifikasi ini">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Hapus
+            </button>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nama Sertifikasi <span class="required-star">*</span></label>
+              <input type="text" value="${escapeAttr(cert.title)}" placeholder="AWS Certified Solutions Architect" oninput="updateCertField('${cert.id}', 'title', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Penerbit & Tahun <span class="hint">(Opsional)</span></label>
+              <input type="text" value="${escapeAttr(cert.issuerYear)}" placeholder="Amazon Web Services (2023)" oninput="updateCertField('${cert.id}', 'issuerYear', this.value)">
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function removeCertification(id) {
+      certifications = certifications.filter(c => c.id !== id);
+      renderCertificationCards();
+      updateCV();
+    }
+
+    function updateCertField(id, field, val) {
+      const target = certifications.find(c => c.id === id);
+      if (target) {
+        target[field] = val;
+        if (field === 'title') {
+          const cardEl = document.getElementById(`cert-card-${id}`);
+          if (cardEl) {
+            const titleEl = cardEl.querySelector('.card-title');
+            if (titleEl) titleEl.textContent = val.trim() ? val.trim() : 'Sertifikasi';
+          }
+        }
+        updateCV();
+      }
+    }
+
+    // ==========================================
+    // MAIN UPDATE CV FUNCTION
+    // ==========================================
+    function updateCV() {
+      if (!isInitializing) {
+        isFormDirty = true;
+        updateSaveStatusUI('dirty');
+      }
+
+      const langConfig = I18N[currentLang];
+
+      // Update Section Header Titles based on language
+      document.getElementById('title-sec-education').textContent = langConfig.secEducation;
+      document.getElementById('title-sec-experience').textContent = langConfig.secExperience;
+      document.getElementById('title-sec-org').textContent = langConfig.secOrg;
+      document.getElementById('title-sec-proj').textContent = langConfig.secProj;
+      document.getElementById('title-sec-skills').textContent = langConfig.secSkills;
+      document.getElementById('title-sec-certs').textContent = langConfig.secCerts;
+
+      // 1. Header Kontak
+      const name = document.getElementById('input-fullname').value.trim() || 'NAMA LENGKAP';
+      document.getElementById('cv-preview-name').textContent = name;
+
+      const email = document.getElementById('input-email').value.trim();
+      const phone = document.getElementById('input-phone').value.trim();
+      const location = document.getElementById('input-location').value.trim();
+      const linkedin = document.getElementById('input-linkedin').value.trim();
+      const portfolio = document.getElementById('input-portfolio').value.trim();
+
+      const contactsContainer = document.getElementById('cv-preview-contacts');
+      const contacts = [];
+      if (location) contacts.push(`<span>${escapeHtml(location)}</span>`);
+      if (phone) contacts.push(`<span>${escapeHtml(phone)}</span>`);
+      if (email) contacts.push(`<span><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></span>`);
+      if (linkedin) contacts.push(`<span><a href="${ensureUrl(linkedin)}" target="_blank">${escapeHtml(cleanUrl(linkedin))}</a></span>`);
+      if (portfolio) contacts.push(`<span><a href="${ensureUrl(portfolio)}" target="_blank">${escapeHtml(cleanUrl(portfolio))}</a></span>`);
+
+      contactsContainer.innerHTML = contacts.join('');
+
+      // 2. Summary (TANPA HEADER JUDUL)
+      const summary = document.getElementById('input-summary').value.trim();
+      const summarySec = document.getElementById('cv-preview-summary-sec');
+      if (summary) {
+        summarySec.style.display = 'block';
+        document.getElementById('cv-preview-summary').textContent = summary;
+      } else {
+        summarySec.style.display = 'none';
+      }
+
+      // 3. Education (DI ATAS WORK EXPERIENCE)
+      const eduPreview = document.getElementById('cv-preview-education');
+      const eduSec = document.getElementById('cv-preview-education-sec');
+      eduPreview.innerHTML = '';
+      const validEdus = educations.filter(e => (e.institution && e.institution.trim()) || (e.degree && e.degree.trim()));
+      if (validEdus.length > 0) {
+        eduSec.style.display = 'block';
+        validEdus.forEach(edu => {
+          const entry = document.createElement('div');
+          entry.className = 'cv-entry';
+          const periodText = computePeriodString(edu.startMonth, edu.endMonth, edu.isPresent);
+
+          const achievementsList = edu.achievements
+            ? edu.achievements
+                .split('\n')
+                .map(line => line.replace(/^[•\-\*]\s*/, '').trim())
+                .filter(line => line.length > 0)
+                .map(line => `<li>${escapeHtml(line)}</li>`)
+                .join('')
+            : '';
+
+          entry.innerHTML = `
+            <div class="cv-entry-header">
+              <span class="cv-title-bold">${escapeHtml(edu.institution || '')}</span>
+              <span class="cv-date">${escapeHtml(periodText)}</span>
+            </div>
+            <div class="cv-sub-header">
+              <span class="cv-sub-bold">${escapeHtml(edu.degree || '')}${edu.gpa ? ` — ${escapeHtml(edu.gpa)}` : ''}</span>
+            </div>
+            ${achievementsList ? `<ul class="cv-bullets">${achievementsList}</ul>` : ''}
+          `;
+          eduPreview.appendChild(entry);
+        });
+      } else {
+        eduSec.style.display = 'none';
+      }
+
+      // 4. Professional Experience
+      const expPreview = document.getElementById('cv-preview-experience');
+      const expSec = document.getElementById('cv-preview-experience-sec');
+      expPreview.innerHTML = '';
+      const validExps = experiences.filter(e => (e.role && e.role.trim()) || (e.company && e.company.trim()));
+      if (validExps.length > 0) {
+        expSec.style.display = 'block';
+        validExps.forEach(exp => {
+          const entry = document.createElement('div');
+          entry.className = 'cv-entry';
+          const periodText = computePeriodString(exp.startMonth, exp.endMonth, exp.isPresent);
+
+          const bullets = exp.bullets
+            ? exp.bullets
+                .split('\n')
+                .map(line => line.replace(/^[•\-\*]\s*/, '').trim())
+                .filter(line => line.length > 0)
+                .map(line => `<li>${escapeHtml(line)}</li>`)
+                .join('')
+            : '';
+
+          entry.innerHTML = `
+            <div class="cv-entry-header">
+              <span class="cv-title-bold">${escapeHtml(exp.role || '')}</span>
+              <span class="cv-date">${escapeHtml(periodText)}</span>
+            </div>
+            <div class="cv-sub-header">
+              <span class="cv-sub-bold">${escapeHtml(exp.company || '')}</span>
+              ${exp.location ? `<span class="cv-location">${escapeHtml(exp.location)}</span>` : ''}
+            </div>
+            ${bullets ? `<ul class="cv-bullets">${bullets}</ul>` : ''}
+          `;
+          expPreview.appendChild(entry);
+        });
+      } else {
+        expSec.style.display = 'none';
+      }
+
+      // 5. Organizational Experience
+      const orgPreview = document.getElementById('cv-preview-org');
+      const orgSec = document.getElementById('cv-preview-org-sec');
+      orgPreview.innerHTML = '';
+      const validOrgs = organizations.filter(o => (o.role && o.role.trim()) || (o.orgName && o.orgName.trim()));
+      if (validOrgs.length > 0) {
+        orgSec.style.display = 'block';
+        validOrgs.forEach(org => {
+          const entry = document.createElement('div');
+          entry.className = 'cv-entry';
+          const periodText = computePeriodString(org.startMonth, org.endMonth, org.isPresent);
+
+          const bullets = org.bullets
+            ? org.bullets
+                .split('\n')
+                .map(line => line.replace(/^[•\-\*]\s*/, '').trim())
+                .filter(line => line.length > 0)
+                .map(line => `<li>${escapeHtml(line)}</li>`)
+                .join('')
+            : '';
+
+          entry.innerHTML = `
+            <div class="cv-entry-header">
+              <span class="cv-title-bold">${escapeHtml(org.role || '')}</span>
+              <span class="cv-date">${escapeHtml(periodText)}</span>
+            </div>
+            <div class="cv-sub-header">
+              <span class="cv-sub-bold">${escapeHtml(org.orgName || '')}</span>
+            </div>
+            ${bullets ? `<ul class="cv-bullets">${bullets}</ul>` : ''}
+          `;
+          orgPreview.appendChild(entry);
+        });
+      } else {
+        orgSec.style.display = 'none';
+      }
+
+      // 6. Projects & Activities
+      const projPreview = document.getElementById('cv-preview-proj');
+      const projSec = document.getElementById('cv-preview-proj-sec');
+      projPreview.innerHTML = '';
+      const validProjs = projectActivities.filter(p => p.name && p.name.trim());
+      if (validProjs.length > 0) {
+        projSec.style.display = 'block';
+        validProjs.forEach(proj => {
+          const entry = document.createElement('div');
+          entry.className = 'cv-entry';
+          const periodText = computePeriodString(proj.startMonth, proj.endMonth, false);
+
+          const bullets = proj.bullets
+            ? proj.bullets
+                .split('\n')
+                .map(line => line.replace(/^[•\-\*]\s*/, '').trim())
+                .filter(line => line.length > 0)
+                .map(line => `<li>${escapeHtml(line)}</li>`)
+                .join('')
+            : '';
+
+          entry.innerHTML = `
+            <div class="cv-entry-header">
+              <span class="cv-title-bold">${escapeHtml(proj.name || '')}</span>
+              ${periodText ? `<span class="cv-date">${escapeHtml(periodText)}</span>` : ''}
+            </div>
+            ${proj.roleOrLink ? `<div class="cv-sub-header"><span class="cv-sub-bold">${escapeHtml(proj.roleOrLink)}</span></div>` : ''}
+            ${bullets ? `<ul class="cv-bullets">${bullets}</ul>` : ''}
+          `;
+          projPreview.appendChild(entry);
+        });
+      } else {
+        projSec.style.display = 'none';
+      }
+
+      // 7. Skills & Technologies
+      const hardSkills = document.getElementById('input-hardskills').value.trim();
+      const tools = document.getElementById('input-tools').value.trim();
+      const languages = document.getElementById('input-languages').value.trim();
+      const skillsContainer = document.getElementById('cv-preview-skills');
+      const skillsSec = document.getElementById('cv-preview-skills-sec');
+      skillsContainer.innerHTML = '';
+
+      let hasSkills = false;
+      if (hardSkills) {
+        hasSkills = true;
+        skillsContainer.innerHTML += `<div class="cv-skill-row"><span class="cv-skill-label">${langConfig.skillTech}</span> ${escapeHtml(hardSkills)}</div>`;
+      }
+      if (tools) {
+        hasSkills = true;
+        skillsContainer.innerHTML += `<div class="cv-skill-row"><span class="cv-skill-label">${langConfig.skillTools}</span> ${escapeHtml(tools)}</div>`;
+      }
+      if (languages) {
+        hasSkills = true;
+        skillsContainer.innerHTML += `<div class="cv-skill-row"><span class="cv-skill-label">${langConfig.skillLang}</span> ${escapeHtml(languages)}</div>`;
+      }
+      skillsSec.style.display = hasSkills ? 'block' : 'none';
+
+      // 8. Certifications
+      const certSec = document.getElementById('cv-preview-cert-sec');
+      const certBullets = document.getElementById('cv-preview-certs');
+      certBullets.innerHTML = '';
+      const validCerts = certifications.filter(c => c.title && c.title.trim());
+      if (validCerts.length > 0) {
+        certSec.style.display = 'block';
+        validCerts.forEach(c => {
+          const text = c.issuerYear && c.issuerYear.trim() ? `${c.title.trim()} — ${c.issuerYear.trim()}` : c.title.trim();
+          certBullets.innerHTML += `<li>${escapeHtml(text)}</li>`;
+        });
+      } else {
+        certSec.style.display = 'none';
+      }
+    }
+
+    // ==========================================
+    // LOCAL STORAGE PERSISTENCE (BUG FIX: Direct Sync)
+    // ==========================================
+    const STORAGE_KEY = 'ats_resume_data_v1';
+
+    function saveToLocalStorage(isSilent = false) {
+      const dataToSave = {
+        fullname: document.getElementById('input-fullname').value,
+        email: document.getElementById('input-email').value,
+        phone: document.getElementById('input-phone').value,
+        location: document.getElementById('input-location').value,
+        linkedin: document.getElementById('input-linkedin').value,
+        portfolio: document.getElementById('input-portfolio').value,
+        summary: document.getElementById('input-summary').value,
+        hardskills: document.getElementById('input-hardskills').value,
+        tools: document.getElementById('input-tools').value,
+        languages: document.getElementById('input-languages').value,
+        fontChoice: document.getElementById('font-choice').value,
+        currentLang: currentLang,
+        educations: educations,
+        experiences: experiences,
+        organizations: organizations,
+        projectActivities: projectActivities,
+        certifications: certifications,
+        savedAt: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+        isFormDirty = false;
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        updateSaveStatusUI('saved', timeStr);
+
+        if (!isSilent) {
+          showToast('success', 'Data formulir berhasil disimpan');
+        }
+      } catch (e) {
+        console.error(e);
+        if (!isSilent) {
+          showToast('warning', 'Gagal menyimpan data ke browser');
+        }
+      }
+    }
+
+    // Schedule Auto-Save saat browser idle (bebas beban / zero lag)
+    function scheduleAutoSave() {
+      if (!isFormDirty) return; // Hanya simpan jika ada perubahan data
+
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(() => saveToLocalStorage(true), { timeout: 2000 });
+      } else {
+        setTimeout(() => saveToLocalStorage(true), 0);
+      }
+    }
+
+    // Interval Auto-Save 2 Menit (120 detik)
+    setInterval(scheduleAutoSave, AUTO_SAVE_INTERVAL_MS);
+
+    // Deteksi Tab Tidak Aktif / Berpindah Aplikasi
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && isFormDirty) {
+        saveToLocalStorage(true);
+      }
+    });
+
+    // Fallback saat Tab / Jendela Browser Ditutup
+    window.addEventListener('beforeunload', () => {
+      if (isFormDirty) {
+        saveToLocalStorage(true);
+      }
+    });
+
+    function loadFromLocalStorage() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) return false;
+        const data = JSON.parse(stored);
+
+        document.getElementById('input-fullname').value = data.fullname || '';
+        document.getElementById('input-email').value = data.email || '';
+        document.getElementById('input-phone').value = data.phone || '';
+        document.getElementById('input-location').value = data.location || '';
+        document.getElementById('input-linkedin').value = data.linkedin || '';
+        document.getElementById('input-portfolio').value = data.portfolio || '';
+        document.getElementById('input-summary').value = data.summary || '';
+        document.getElementById('input-hardskills').value = data.hardskills || '';
+        document.getElementById('input-tools').value = data.tools || '';
+        document.getElementById('input-languages').value = data.languages || '';
+
+        if (data.fontChoice) {
+          document.getElementById('font-choice').value = data.fontChoice;
+          changeFont(data.fontChoice);
+        }
+
+        if (data.currentLang) {
+          currentLang = data.currentLang;
+          document.getElementById('lang-btn-id').classList.toggle('active', currentLang === 'id');
+          document.getElementById('lang-btn-en').classList.toggle('active', currentLang === 'en');
+          document.getElementById('preview-lang-badge').textContent = I18N[currentLang].langLabel;
+        }
+
+        // Deep copy array data directly so they are immediately available in memory
+        educations = Array.isArray(data.educations) ? JSON.parse(JSON.stringify(data.educations)) : [];
+        experiences = Array.isArray(data.experiences) ? JSON.parse(JSON.stringify(data.experiences)) : [];
+        organizations = Array.isArray(data.organizations) ? JSON.parse(JSON.stringify(data.organizations)) : [];
+        projectActivities = Array.isArray(data.projectActivities) ? JSON.parse(JSON.stringify(data.projectActivities)) : [];
+        certifications = Array.isArray(data.certifications) ? JSON.parse(JSON.stringify(data.certifications)) : [];
+
+        // Render card elements
+        renderEducationCards();
+        renderExperienceCards();
+        renderOrganizationCards();
+        renderProjectActivityCards();
+        renderCertificationCards();
+
+        // Update preview right away
+        updateCV();
+        return true;
+      } catch (err) {
+        console.error(err);
+        return false;
+      }
+    }
+
+    // Helper functions
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function escapeAttr(str) {
+      if (!str) return '';
+      return String(str).replace(/"/g, '&quot;');
+    }
+    function cleanUrl(url) {
+      return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    }
+    function ensureUrl(url) {
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return 'https://' + url;
+      }
+      return url;
+    }
+
+    // Export to PDF / Print
+    function exportToPdf() {
+      window.print();
+    }
+
+    // Sample Data Loader
+    function loadSampleData() {
+      document.getElementById('input-fullname').value = 'Rian Adiputra, S.Kom.';
+      document.getElementById('input-email').value = 'rian.adiputra@email.com';
+      document.getElementById('input-phone').value = '+62 812-3456-7890';
+      document.getElementById('input-location').value = 'Jakarta Selatan, Indonesia';
+      document.getElementById('input-linkedin').value = 'linkedin.com/in/rianadiputra';
+      document.getElementById('input-portfolio').value = 'github.com/rianadiputra';
+
+      document.getElementById('input-summary').value = 'Software Engineer dengan 4+ tahun pengalaman dalam arsitektur backend berskala tinggi, microservices, dan sistem terdistribusi. Berhasil memimpin inisiatif optimasi latensi API hingga 38% serta memproses 2.5 juta transaksi harian dengan ketersediaan sistem 99.98%.';
+
+      // Reset all dynamic state
+      educations = [
+        {
+          id: 'edu_1',
+          institution: 'Universitas Indonesia',
+          degree: 'Sarjana Ilmu Komputer (S1)',
+          startMonth: '2016-08',
+          endMonth: '2020-07',
+          isPresent: false,
+          gpa: 'IPK: 3.78 / 4.00 (Cum Laude)',
+          achievements: '• Juara 1 Gemastik Bidang Software Development Tingkat Nasional 2019\n• Penerima Djarum Beasiswa Plus untuk Kepemimpinan dan Prestasi Akademik\n• Publikasi Skripsi: Desain dan Implementasi Sistem Pemrosesan Data Terdistribusi'
+        }
+      ];
+
+      experiences = [
+        {
+          id: 'exp_1',
+          role: 'Senior Backend Engineer',
+          company: 'PT Fintek Solusi Digital',
+          startMonth: '2022-02',
+          endMonth: '',
+          isPresent: true,
+          location: 'Jakarta, Indonesia',
+          bullets: '• Merancang dan mengimplementasikan microservices pembayaran menggunakan Go dan Kafka, menangani 2.5 juta transaksi per hari dengan uptime 99.98%.\n• Mengurangi waktu respon endpoint transaksi dari 450ms menjadi 180ms melalui optimasi query PostgreSQL dan indexing Redis.\n• Memimpin migrasi CI/CD pipeline dengan Docker & GitLab CI, memangkas durasi deployment dari 35 menit menjadi 8 menit.'
+        },
+        {
+          id: 'exp_2',
+          role: 'Software Engineer',
+          company: 'PT Global Niaga Teknologi',
+          startMonth: '2020-08',
+          endMonth: '2022-01',
+          isPresent: false,
+          location: 'Jakarta, Indonesia',
+          bullets: '• Mengembangkan 15+ RESTful API inti untuk modul checkout e-commerce yang digunakan oleh 400.000+ pengguna aktif bulanan.\n• Mengintegrasikan payment gateway multi-channel (QRIS, Virtual Account, Credit Card) dengan tingkat keberhasilan transaksi 99.4%.\n• Menulis automated unit test dan integration test dengan code coverage mencapai 85%.'
+        }
+      ];
+
+      organizations = [
+        {
+          id: 'org_1',
+          role: 'Lead Coordinator',
+          orgName: 'Google Developer Student Clubs (GDSC) UI',
+          startMonth: '2019-09',
+          endMonth: '2020-08',
+          isPresent: false,
+          bullets: '• Menginisiasi dan menyelenggarakan 8 sesi workshop cloud computing & software development dengan total 450+ peserta mahasiswa.\n• Mengelola tim kepanitiaan inti yang terdiri dari 12 mahasiswa dari berbagai jurusan.'
+        }
+      ];
+
+      projectActivities = [
+        {
+          id: 'proj_1',
+          name: 'High-Throughput Notification Engine',
+          roleOrLink: 'Creator & Maintainer | Go, Redis, RabbitMQ',
+          startMonth: '2023-01',
+          endMonth: '2023-05',
+          bullets: '• Membangun microservice open-source untuk batch processing pengiriman 100k email & push notifications per menit.\n• Mendapatkan 400+ stars di GitHub dan diintegrasikan oleh 3 startup lokal.'
+        }
+      ];
+
+      certifications = [
+        {
+          id: 'cert_1',
+          title: 'AWS Certified Solutions Architect – Associate',
+          issuerYear: 'Amazon Web Services (2023)'
+        },
+        {
+          id: 'cert_2',
+          title: 'CKAD: Certified Kubernetes Application Developer',
+          issuerYear: 'Cloud Native Computing Foundation (2022)'
+        }
+      ];
+
+      document.getElementById('input-hardskills').value = 'Microservices, RESTful API Design, Event-Driven Architecture, Database Optimization, CI/CD Pipelines, System Monitoring';
+      document.getElementById('input-tools').value = 'Go (Golang), Node.js, Python, PostgreSQL, Redis, Apache Kafka, Docker, Kubernetes, AWS, Git';
+      document.getElementById('input-languages').value = 'Bahasa Indonesia (Native), English (Professional Working Proficiency)';
+
+      renderEducationCards();
+      renderExperienceCards();
+      renderOrganizationCards();
+      renderProjectActivityCards();
+      renderCertificationCards();
+
+      updateCV();
+      showToast('success', 'Contoh data resume berhasil dimuat');
+      if (!isInitializing) {
+        isFormDirty = true;
+        updateSaveStatusUI('dirty');
+      }
+    }
+
+    // Initialize: Cek Local Storage, jika tidak ada baru muat sample
+    window.addEventListener('DOMContentLoaded', () => {
+      const restored = loadFromLocalStorage();
+      if (!restored) {
+        loadSampleData();
+      } else {
+        showToast('info', 'Data sesi terakhir berhasil dipulihkan');
+      }
+      isInitializing = false;
+      isFormDirty = false;
+      updateSaveStatusUI('saved');
+    });
+  </script>
+</body>
+</html>
