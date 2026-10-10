@@ -1176,6 +1176,11 @@
           <input type="text" id="input-hardskills" placeholder="Contoh: RESTful APIs, Microservices, CI/CD, Database Design" oninput="updateCV()">
         </div>
 
+        <div class="form-group">
+          <label>Soft Skills <span class="hint">(Opsional)</span></label>
+          <input type="text" id="input-softskills" placeholder="Contoh: Leadership, Problem Solving, Communication, Team Collaboration" oninput="updateCV()">
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label>Alat Kerja & Frameworks <span class="hint">(Opsional)</span></label>
@@ -1338,6 +1343,7 @@
         secCerts: 'Certifications',
         present: 'Present',
         skillTech: 'Technical Skills:',
+        skillSoft: 'Soft Skills:',
         skillTools: 'Tools & Frameworks:',
         skillLang: 'Languages:',
         langLabel: 'English',
@@ -1356,6 +1362,7 @@
         secCerts: 'Sertifikasi',
         present: 'Sekarang',
         skillTech: 'Keahlian Teknis:',
+        skillSoft: 'Soft Skills:',
         skillTools: 'Alat Kerja & Framework:',
         skillLang: 'Bahasa:',
         langLabel: 'Bahasa Indonesia',
@@ -2274,6 +2281,7 @@
 
       // 7. Skills & Technologies
       const hardSkills = document.getElementById('input-hardskills').value.trim();
+      const softSkills = document.getElementById('input-softskills').value.trim();
       const tools = document.getElementById('input-tools').value.trim();
       const languages = document.getElementById('input-languages').value.trim();
       const skillsContainer = document.getElementById('cv-preview-skills');
@@ -2284,6 +2292,10 @@
       if (hardSkills) {
         hasSkills = true;
         skillsContainer.innerHTML += `<div class="cv-skill-row"><span class="cv-skill-label">${langConfig.skillTech}</span> ${escapeHtml(hardSkills)}</div>`;
+      }
+      if (softSkills) {
+        hasSkills = true;
+        skillsContainer.innerHTML += `<div class="cv-skill-row"><span class="cv-skill-label">${langConfig.skillSoft}</span> ${escapeHtml(softSkills)}</div>`;
       }
       if (tools) {
         hasSkills = true;
@@ -2326,6 +2338,7 @@
         portfolio: document.getElementById('input-portfolio').value,
         summary: document.getElementById('input-summary').value,
         hardskills: document.getElementById('input-hardskills').value,
+        softskills: document.getElementById('input-softskills').value,
         tools: document.getElementById('input-tools').value,
         languages: document.getElementById('input-languages').value,
         fontChoice: document.getElementById('font-choice').value,
@@ -2397,6 +2410,7 @@
         document.getElementById('input-portfolio').value = data.portfolio || '';
         document.getElementById('input-summary').value = data.summary || '';
         document.getElementById('input-hardskills').value = data.hardskills || '';
+        document.getElementById('input-softskills').value = data.softskills || '';
         document.getElementById('input-tools').value = data.tools || '';
         document.getElementById('input-languages').value = data.languages || '';
 
@@ -2544,6 +2558,7 @@
       ];
 
       document.getElementById('input-hardskills').value = 'Microservices, RESTful API Design, Event-Driven Architecture, Database Optimization, CI/CD Pipelines, System Monitoring';
+      document.getElementById('input-softskills').value = 'Problem Solving, Team Leadership, Cross-functional Collaboration, Agile / Scrum Methodology, Critical Thinking';
       document.getElementById('input-tools').value = 'Go (Golang), Node.js, Python, PostgreSQL, Redis, Apache Kafka, Docker, Kubernetes, AWS, Git';
       document.getElementById('input-languages').value = 'Bahasa Indonesia (Native), English (Professional Working Proficiency)';
 
